@@ -22,9 +22,9 @@ func flatten(lst *List) *List {
 	Head, Headok := lst.Head.(*List)
 	Tail, _ := lst.Tail.(*List)
 	if Headok {
-		return Nconc(flatten(Head), flatten(Tail))
+		return Splice(flatten(Head), flatten(Tail))
 	}
-	return Nconc(Cons(lst.Head, nil), flatten(Tail))
+	return Splice(Cons(lst.Head, nil), flatten(Tail))
 }
 
 // Each run generates a random nested list, prints it, flattens it, and prints it again.

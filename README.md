@@ -2,6 +2,8 @@
 
 Copyright © 2019 Lawrence E. Bakst. All rights reserved.
 
+## Introduction
+
 Unlike languages such as Python and Ruby, Go does not have a built in list type.
 
 Package lispylist implements a classical lisp list data structure based on a Cons cell or Pair. 
@@ -11,3 +13,8 @@ The basic data structure here is a "List". sometimes called a "cons" or "pair" w
     MakeList(1, 2, 3, 4) === (1 . (2 . (3 . (4. nil)))) == Cons(1, Cons(2, Cons(3, Cons(4, nil))))
     
 In summary, list.Head contains a list element and the list.Tail contains a pointer to the next list element. This it's a singly linked list. Most of the functions here are straight functions and not methods. Currently the sole exception is Print for which a convenience function Print also exists. Functions are in keeping with how other languages implement lists.
+
+## Future Plans
+This was a fun project and I plan to add most of the other classic lisp functions such as append, map, and so on.
+
+When Go 2 is available this will be the first package I convert to use the new generics mechanism.

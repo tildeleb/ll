@@ -11,7 +11,9 @@
 // MakeList(1, 2, 3, 4) === (1 . (2 . (3 . (4. nil)))) == Cons(1, Cons(2, Cons(3, Cons(4, nil))))
 // In summary, list.Head contains a list element and the list.Tail contains a pointer to the next list element.
 // Most of the functions here are just straight functions and not methods.
-// Currently the sole exception is Print for which a convenience
+// Currently the sole exception is Print for which a convenience.
+//
+// Some personal conflict here about using classic Lisp names like car and cdr vs head and tail, nconc vs splice.
 
 package lispylist
 
@@ -40,6 +42,9 @@ func Cons(a, b interface{}) *List {
 
 // List creates a list of whatever is passed in as rest.
 func MakeList(rest ...interface{}) *List {
+	if rest == nil || len(rest) == 0 {
+		return nil
+	}
 	h := Cons(rest[0], nil)
 	l := h
 	for _, v := range rest[1:] {
@@ -59,6 +64,25 @@ func Last(x *List) *List {
 
 // Nconc is like append but it shares structure with the lists that are passed to it.
 func Nconc(x, y *List) *List {
+	switch {
+	case x == nil && y == nil:
+		return nil
+	case x != nil && y == nil:
+		return x
+	case x == nil && y != nil:
+		return y
+	case x.Tail != nil:
+		l := Last(x)
+		l.Tail = y
+		return x
+	default:
+		x.Tail = y
+		return x
+	}
+}
+
+// Nconc is horrible old lispy name so I cloned it as "splice" for now.
+func Splice(x, y *List) *List {
 	switch {
 	case x == nil && y == nil:
 		return nil
@@ -96,26 +120,82 @@ func Flatten(tree interface{}) *List {
 	return rec(tree, nil)
 }
 
-// FlattenAlt is an alternate version of Flatten
-func FlattenAlt(tree *List) *List {
-	if tree == nil {
+// FlattenAlt is an alternate version of Flatten.
+func FlattenAlt(l *List) *List {
+	if l == nil {
 		return nil
 	}
-	Head, Headok := tree.Head.(*List)
-	Tail, _ := tree.Tail.(*List)
+	Head, Headok := l.Head.(*List)
+	Tail, _ := l.Tail.(*List)
 	if Headok {
 		return Nconc(FlattenAlt(Head), FlattenAlt(Tail))
 	}
-	return Nconc(Cons(tree.Head, nil), FlattenAlt(Tail))
+	return Nconc(Cons(l.Head, nil), FlattenAlt(Tail))
 }
 
-// Print prints a list
+// Length as a tail recursive function.
+func LengthAlt(l *List) int {
+	if l == nil {
+		return 0
+	}
+	l, _ = l.Tail.(*List)
+	return (1 + LengthAlt(l))
+}
+
+// Length returns the number of top level Cons.
+func Length(l *List) int {
+	var cnt int
+	for {
+		if l == nil {
+			return cnt
+		}
+		l, _ = l.Tail.(*List)
+		cnt++
+	}
+}
+
+// Traverse a list depth first/head first
+func Traverse(lst *List, f func(e interface{})) {
+	var trav func(l *List, f func(e interface{}))
+	trav = func(l *List, f func(e interface{})) {
+		if l == nil {
+			return
+		}
+		if l.Head != nil {
+			v, ok := l.Head.(*List)
+			if ok {
+				trav(v, f)
+			} else {
+				f(l.Head)
+			}
+		}
+		if l.Tail != nil {
+			v, ok := l.Tail.(*List)
+			if ok {
+				trav(v, f)
+			} else {
+				f(l.Tail)
+			}
+		}
+	}
+	trav(lst, f)
+}
+
+var Pmax = 45 // The maximum number of list elements Print will print.
+
+// Print prints a list up to Pmax elements long
+// would be nice if pmax triggers to print the last few elements too
 func (list *List) Print() {
+	var cnt = 0
 	var p func(list *List)
 	p = func(list *List) {
 		fmt.Printf("(")
 		prev := list
 		for {
+			if cnt >= Pmax {
+				fmt.Printf("...")
+				break
+			}
 			if prev == nil {
 				break
 			}
@@ -130,6 +210,7 @@ func (list *List) Print() {
 					} else {
 						fmt.Printf("%v", prev.Head)
 					}
+					cnt++
 				}
 			}
 			if prev.Tail != nil {
@@ -145,19 +226,21 @@ func (list *List) Print() {
 	fmt.Printf("\n")
 }
 
+// Print a List
 func Print(list *List) {
 	list.Print()
 }
 
-// A few utility functions mainly used for testing
+// Support for random numbers without locking
 var s = rand.NewSource(time.Now().UTC().UnixNano())
 var r = rand.New(s)
 
-// rbetween returns random int [a, b]
+// rbetween returns random int [a, b].
 func rbetween(a int, b int) int {
 	return r.Intn(b-a+1) + a
 }
 
+// A few utility functions mainly used for testing.
 func VerifyFlattenedList(l *List) bool {
 	i := 1
 	var v func(l *List) bool
@@ -176,6 +259,7 @@ func VerifyFlattenedList(l *List) bool {
 	return v(l)
 }
 
+// Generate a list of ints starting at start and length long.
 func GenIntList(start, length int) *List {
 	idx := start + length - 1
 	l := Cons(idx, nil)
@@ -187,7 +271,8 @@ func GenIntList(start, length int) *List {
 	return l
 }
 
-func GenNestedList(v, n, depth int) *List {
+// Generate a nested list of ints starting at start and length long with up to depth nesting.
+func GenNestedList(start, length, depth int) *List {
 	var gnl func(d int) *List
 	gnl = func(d int) *List {
 		d--
@@ -199,9 +284,9 @@ func GenNestedList(v, n, depth int) *List {
 			lst.Tail = MakeList(b)
 			return lst
 		} else {
-			l := rbetween(1, n/rbetween(1, depth))
-			lst := GenIntList(v, l)
-			v += l
+			l := rbetween(1, length/rbetween(1, depth))
+			lst := GenIntList(start, l)
+			start += l
 			return lst
 		}
 	}
