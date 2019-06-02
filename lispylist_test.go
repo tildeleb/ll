@@ -1,52 +1,10 @@
 package lispylist_test
 
-//import "fmt"
-import "time"
-import "testing"
-import "math/rand"
-
-import . "leb.io/lispylist"
-
-var s = rand.NewSource(time.Now().UTC().UnixNano())
-var r = rand.New(s)
-
-// rbetween returns random int [a, b]
-func rbetween(a int, b int) int {
-	return r.Intn(b-a+1) + a
-}
-
-func GenList(start, length int) *List {
-	idx := start + length - 1
-	l := Cons(idx, nil)
-	idx--
-	for idx >= start {
-		l = Cons(idx, l)
-		idx--
-	}
-	return l
-}
-
-func GenNestedList(v, n, depth int) *List {
-	var gnl func(d int) *List
-	gnl = func(d int) *List {
-		d--
-		if d > 0 {
-			lst := Cons(nil, nil)
-			a := gnl(rbetween(1, d))
-			b := gnl(rbetween(1, d))
-			lst.Head = a
-			lst.Tail = MakeList(b)
-			return lst
-		} else {
-			l := rbetween(1, n/rbetween(1, depth))
-			lst := GenList(v, l)
-			v += l
-			return lst
-		}
-	}
-	d := rbetween(1, depth)
-	return gnl(d)
-}
+import (
+	_ "fmt"
+	. "leb.io/lispylist"
+	"testing"
+)
 
 func benchmarkFlatten(b *testing.B, l []*List) {
 	idx := 0
@@ -60,11 +18,11 @@ func benchmarkFlatten(b *testing.B, l []*List) {
 	}
 }
 
-func benchmarkFlattenSlow(b *testing.B, l []*List) {
+func benchmarkFlattenAlt(b *testing.B, l []*List) {
 	idx := 0
 	length := len(l)
 	for i := 0; i < b.N; i++ {
-		FlattenSlow(l[idx])
+		FlattenAlt(l[idx])
 		idx++
 		if idx >= length {
 			idx = 0
@@ -76,8 +34,8 @@ func BenchmarkFlatten(b *testing.B) {
 	benchmarkFlatten(b, ll)
 }
 
-func BenchmarkFlattenSlow(b *testing.B) {
-	benchmarkFlattenSlow(b, ll)
+func BenchmarkFlattenAlt(b *testing.B) {
+	benchmarkFlattenAlt(b, ll)
 }
 
 var n = 10000
@@ -89,7 +47,19 @@ func init() {
 	}
 }
 
-func ExampleOfList() {
+func TestFlatten(t *testing.T) {
+	for i := 0; i < 1000; i++ {
+		l := GenNestedList(1, 100, 9)
+		//Print(l)
+		l = Flatten(l)
+		//Print(l)
+		if VerifyFlattenedList(l) {
+			t.Fail()
+		}
+	}
+}
+
+func ExamplOfList() {
 	list := MakeList(1, 2, 3, 4, 5)
 	Print(list)
 	// Output:
@@ -105,6 +75,25 @@ func ExampleOfFlatten() {
 	// (1 2 3 4 5 6 7 8)
 }
 
+func ExampleOfStrings() {
+	l := MakeList("how", "now", "brown", "cow")
+	Print(l)
+	// Output:
+	// ("how" "now" "brown" "cow")
+}
+
+func ExampleNconc() {
+	l1 := MakeList(1)
+	l2 := MakeList(2)
+	l3 := MakeList(3, 4)
+	l4 := MakeList(5, 6, 7)
+	Print(Nconc(l1, l2))
+	Print(Nconc(l3, l4))
+	// Output:
+	// (1 2)
+	// (3 4 5 6 7)
+}
+
 func Example001() {
 	h := Cons(1, nil)
 	Print(h)
@@ -116,6 +105,12 @@ func Example001() {
 	// Output:
 	// (1)
 	// (1 2 3)
+}
+
+func Example002() {
+	Print(Cons(1, Cons(2, Cons(3, Cons(4, nil)))))
+	// Output:
+	// (1 2 3 4)
 }
 
 /*
