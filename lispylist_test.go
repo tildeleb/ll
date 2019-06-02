@@ -1,3 +1,4 @@
+// Copyright © 2019 Lawrence E. Bakst. All rights reserved.
 package lispylist_test
 
 import (

@@ -1,3 +1,4 @@
+// Copyright © 2019 Lawrence E. Bakst. All rights reserved.
 // I wanted to code this in Go.
 // Unlike Ruby, Python, and others, Go doesn't have a built-in list type.
 // So I wrote a simple list package based on the way lists were originally designed in Lisp.
@@ -9,12 +10,14 @@ package main
 
 import . "leb.io/lispylist"
 
-// This function is from the "lispylist" package.
-// There are many ways to code flatten. I believe this version is one of the easiest to understand.
-// Nconc is just a destructive version of append, so the argument is modified not copied.
-// This version of flatten is tail recursive.
-// Go usually optimizes tail recursion to a goto so the stack doesn't grow.
-// I didn't verify this.
+// This function below was copied from FlattenAlt in my "lispylist" package.
+// The assignment doesn't specify how to flatten a list.
+// Nor does the assignment specify if the resulting flattened list can share structure with the arguments.
+// All the versions of flatten I coded do a depth first, head first traversal of the list.
+// This version uses Spice and the resulting flattened list shares structure with the arguments.
+// See Flatten() or the Traverse() example in ltest.go for examples that doesn't share structire
+// All code has been tested with lists up to length of 100,000.
+// For lists larger than 100,000 all the functions that are tail recursive would have to be verified.
 func flatten(lst *List) *List {
 	if lst == nil {
 		return nil

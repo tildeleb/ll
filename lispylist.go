@@ -7,13 +7,17 @@
 // The basic data structure here is a "List". sometimes called a "cons" or "pair" which has two cells, a Head and a Tail.
 // In classic lisp the head of a list is the "car" and the tail is the "cdr".
 // A Pair is often written as a dotted Pair "(a . b)" where a is the Head and b us the Tail.
-// Lists are build up from dotted Pairs via cons, with the last element of the list having nil as it's Tail.
+// Lists are build up from dotted Pairs via Cons, with the last element of the list having nil as it's Tail.
 // MakeList(1, 2, 3, 4) === (1 . (2 . (3 . (4. nil)))) == Cons(1, Cons(2, Cons(3, Cons(4, nil))))
 // In summary, list.Head contains a list element and the list.Tail contains a pointer to the next list element.
-// Most of the functions here are just straight functions and not methods.
-// Currently the sole exception is Print for which a convenience.
+// Most of the functions here are straight functions and not methods.
+// That's on purpose to support functional composition that reads well.
+// Currently the sole exception is Print for which a convenience function Print exists.
 //
-// Some personal conflict here about using classic Lisp names like car and cdr vs head and tail, nconc vs splice.
+// I am a bit conflicted about using classic Lisp names like car and cdr vs head and tail, nconc vs splice.
+//
+// All code has been tested with lists up to length of 100,000.
+// For lists larger than 100,000 all the functions that are tail recursive would have to be verified.
 
 package lispylist
 
@@ -138,7 +142,10 @@ func LengthAlt(l *List) int {
 	if l == nil {
 		return 0
 	}
-	l, _ = l.Tail.(*List)
+	l, ok = l.Tail.(*List)
+	if !ok {
+		panic("LengthAlt: bad list structure")
+	}
 	return (1 + LengthAlt(l))
 }
 
@@ -149,7 +156,10 @@ func Length(l *List) int {
 		if l == nil {
 			return cnt
 		}
-		l, _ = l.Tail.(*List)
+		l, ok = l.Tail.(*List)
+		if !ok {
+			panic("Length: bad list structure")
+		}
 		cnt++
 	}
 }
