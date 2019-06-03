@@ -273,8 +273,6 @@ func VerifyFlattenedList(l *List) bool {
 	i := 1
 	var v func(l *List) bool
 	v = func(l *List) bool {
-		//fmt.Printf("%v\n", l)
-		//#fmt.Printf("%v == %v\n", l.Head.(int), i)
 		if l.Head.(int) != i {
 			return true
 		}
@@ -322,17 +320,13 @@ func GenNestedList(astart, length, depth int) *List {
 	}
 	for start < length+astart {
 		x := rbetween(1, 5)
-		//fmt.Printf("%d:%d x=%d\n", start, length+astart, x)
 		if x < 3 {
 			n := rbetween(start, length+astart)
-			//fmt.Printf("start=%d, length=%d\n", start, n)
 			lst = Splice(lst, GenIntList(start, n))
 			start += n
 		} else {
 			d := rbetween(1, depth)
-			//sav := start
 			l := gnl(d)
-			//fmt.Printf("start=%d, length=%d, depth=%d\n", sav, start-sav, d)
 			lst = Splice(lst, l)
 		}
 	}
