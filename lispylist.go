@@ -18,6 +18,11 @@
 //
 // All code has been tested with lists up to length of 100,000.
 // For lists larger than 100,000 all the functions that are tail recursive would have to be verified.
+//
+// NB. There is code below that does not check that a type assertion is "ok".
+// I am aware of this. However, even though it's not "ok" the nil is still assigned to the variable on the lhs.
+// I actually coded Length with the check and it is substantially harder to read the code and the code is not
+// really more robust with the check.
 
 package lispylist
 
@@ -142,10 +147,7 @@ func LengthAlt(l *List) int {
 	if l == nil {
 		return 0
 	}
-	l, ok = l.Tail.(*List)
-	if !ok {
-		panic("LengthAlt: bad list structure")
-	}
+	l, _ = l.Tail.(*List)
 	return (1 + LengthAlt(l))
 }
 
@@ -156,11 +158,27 @@ func Length(l *List) int {
 		if l == nil {
 			return cnt
 		}
+		l, _ = l.Tail.(*List)
+		cnt++
+	}
+}
+
+// Compare to above, is this really better and safer?
+func LengthWithCheck(l *List) int {
+	var cnt int
+	var ok bool
+	if l == nil {
+		return cnt
+	}
+	for {
+		cnt++
+		if l.Tail == nil {
+			return cnt
+		}
 		l, ok = l.Tail.(*List)
 		if !ok {
 			panic("Length: bad list structure")
 		}
-		cnt++
 	}
 }
 
@@ -282,24 +300,41 @@ func GenIntList(start, length int) *List {
 }
 
 // Generate a nested list of ints starting at start and length long with up to depth nesting.
-func GenNestedList(start, length, depth int) *List {
+func GenNestedList(astart, length, depth int) *List {
+	var start = astart
+	var lst *List = nil
 	var gnl func(d int) *List
 	gnl = func(d int) *List {
 		d--
 		if d > 0 {
-			lst := Cons(nil, nil)
+			l := Cons(nil, nil)
 			a := gnl(rbetween(1, d))
 			b := gnl(rbetween(1, d))
-			lst.Head = a
-			lst.Tail = MakeList(b)
-			return lst
+			l.Head = a
+			l.Tail = MakeList(b)
+			return l
 		} else {
-			l := rbetween(1, length/rbetween(1, depth))
-			lst := GenIntList(start, l)
-			start += l
-			return lst
+			n := rbetween(1, length/rbetween(1, depth)+1)
+			l := GenIntList(start, n)
+			start += n
+			return l
 		}
 	}
-	d := rbetween(1, depth)
-	return gnl(d)
+	for start < length+astart {
+		x := rbetween(1, 5)
+		//fmt.Printf("%d:%d x=%d\n", start, length+astart, x)
+		if x < 3 {
+			n := rbetween(start, length+astart)
+			//fmt.Printf("start=%d, length=%d\n", start, n)
+			lst = Splice(lst, GenIntList(start, n))
+			start += n
+		} else {
+			d := rbetween(1, depth)
+			//sav := start
+			l := gnl(d)
+			//fmt.Printf("start=%d, length=%d, depth=%d\n", sav, start-sav, d)
+			lst = Splice(lst, l)
+		}
+	}
+	return lst
 }
