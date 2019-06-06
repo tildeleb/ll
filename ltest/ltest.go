@@ -15,7 +15,7 @@ var depth = flag.Int("depth", 7, "max depth for nesting")
 // Each run generates a random nested list, prints it, flattens it, and prints it again.
 // Since the lists are generated with increasing integers it's easy to verify the correct results.
 
-func flatten(list *List) *List {
+func flatten(list List) List {
 	l := MakeList()
 	var f = func(v interface{}) {
 		l = Splice(l, Cons(v, nil))

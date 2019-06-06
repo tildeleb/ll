@@ -17,6 +17,7 @@ type Pair struct {
 }
 
 // Option 2 is what I switched to but this struct is not really a List, it's a Pair or Cons.
+// Also the signature for functions and methods is "List *" not "List".
 type List struct {
 	Head interface{}
 	Tail interface{}

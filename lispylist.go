@@ -37,20 +37,21 @@ import (
 // type List *Pair
 // However, methods can not have pointer types a receivers.
 // Might revisit this decision
-type List struct {
+type Pair struct {
 	Head interface{}
 	Tail interface{}
 }
+type List = *Pair
 
 // Cons creates a single element of a List
 // Cons(1, nil) creates a single element list
-func Cons(a, b interface{}) *List {
+func Cons(a, b interface{}) List {
 	//fmt.Printf("cons: (%v . %v)\n", a, b)
-	return &List{a, b}
+	return &Pair{a, b}
 }
 
 // List creates a list of whatever is passed in as rest.
-func MakeList(rest ...interface{}) *List {
+func MakeList(rest ...interface{}) List {
 	if rest == nil || len(rest) == 0 {
 		return nil
 	}
@@ -58,21 +59,21 @@ func MakeList(rest ...interface{}) *List {
 	l := h
 	for _, v := range rest[1:] {
 		l.Tail = Cons(v, nil)
-		l = l.Tail.(*List)
+		l = l.Tail.(List)
 	}
 	return h
 }
 
 // Last returns the last element of a list as a list.
-func Last(x *List) *List {
+func Last(x List) List {
 	for x.Tail != nil {
-		x = x.Tail.(*List)
+		x = x.Tail.(List)
 	}
 	return x
 }
 
 // Nconc is like append but it shares structure with the lists that are passed to it.
-func Nconc(x, y *List) *List {
+func Nconc(x, y List) List {
 	switch {
 	case x == nil && y == nil:
 		return nil
@@ -91,7 +92,7 @@ func Nconc(x, y *List) *List {
 }
 
 // Nconc is horrible old lispy name so I cloned it as "splice" for now.
-func Splice(x, y *List) *List {
+func Splice(x, y List) List {
 	switch {
 	case x == nil && y == nil:
 		return nil
@@ -110,14 +111,14 @@ func Splice(x, y *List) *List {
 }
 
 // Flatten takes a nested list and flattens it. This version uses an accumulator.
-func Flatten(tree interface{}) *List {
-	var rec func(x interface{}, acc *List) *List
-	rec = func(x interface{}, acc *List) *List {
+func Flatten(tree interface{}) List {
+	var rec func(x interface{}, acc List) List
+	rec = func(x interface{}, acc List) List {
 		if x == nil {
 			return acc
 		}
 		switch v := x.(type) {
-		case *List:
+		case List:
 			return rec(v.Head, rec(v.Tail, acc))
 		default:
 			if acc == nil {
@@ -130,12 +131,12 @@ func Flatten(tree interface{}) *List {
 }
 
 // FlattenAlt is an alternate version of Flatten.
-func FlattenAlt(l *List) *List {
+func FlattenAlt(l List) List {
 	if l == nil {
 		return nil
 	}
-	Head, Headok := l.Head.(*List)
-	Tail, _ := l.Tail.(*List)
+	Head, Headok := l.Head.(List)
+	Tail, _ := l.Tail.(List)
 	if Headok {
 		return Nconc(FlattenAlt(Head), FlattenAlt(Tail))
 	}
@@ -143,28 +144,28 @@ func FlattenAlt(l *List) *List {
 }
 
 // Length as a tail recursive function.
-func LengthAlt(l *List) int {
+func LengthAlt(l List) int {
 	if l == nil {
 		return 0
 	}
-	l, _ = l.Tail.(*List)
+	l, _ = l.Tail.(List)
 	return (1 + LengthAlt(l))
 }
 
 // Length returns the number of top level Cons.
-func Length(l *List) int {
+func Length(l List) int {
 	var cnt int
 	for {
 		if l == nil {
 			return cnt
 		}
-		l, _ = l.Tail.(*List)
+		l, _ = l.Tail.(List)
 		cnt++
 	}
 }
 
 // Compare to above, is this really better and safer?
-func LengthWithCheck(l *List) int {
+func LengthWithCheck(l List) int {
 	var cnt int
 	var ok bool
 	if l == nil {
@@ -175,7 +176,7 @@ func LengthWithCheck(l *List) int {
 		if l.Tail == nil {
 			return cnt
 		}
-		l, ok = l.Tail.(*List)
+		l, ok = l.Tail.(List)
 		if !ok {
 			panic("Length: bad list structure")
 		}
@@ -183,14 +184,14 @@ func LengthWithCheck(l *List) int {
 }
 
 // Traverse a list depth first/head first
-func Traverse(lst *List, f func(e interface{})) {
-	var trav func(l *List, f func(e interface{}))
-	trav = func(l *List, f func(e interface{})) {
+func Traverse(lst List, f func(e interface{})) {
+	var trav func(l List, f func(e interface{}))
+	trav = func(l List, f func(e interface{})) {
 		if l == nil {
 			return
 		}
 		if l.Head != nil {
-			v, ok := l.Head.(*List)
+			v, ok := l.Head.(List)
 			if ok {
 				trav(v, f)
 			} else {
@@ -198,7 +199,7 @@ func Traverse(lst *List, f func(e interface{})) {
 			}
 		}
 		if l.Tail != nil {
-			v, ok := l.Tail.(*List)
+			v, ok := l.Tail.(List)
 			if ok {
 				trav(v, f)
 			} else {
@@ -213,10 +214,10 @@ var Pmax = 45 // The maximum number of list elements Print will print.
 
 // Print prints a list up to Pmax elements long
 // would be nice if pmax triggers to print the last few elements too
-func (list *List) Print() {
+func (list List) Print() {
 	var cnt = 0
-	var p func(list *List)
-	p = func(list *List) {
+	var p func(list List)
+	p = func(list List) {
 		fmt.Printf("(")
 		prev := list
 		for {
@@ -228,7 +229,7 @@ func (list *List) Print() {
 				break
 			}
 			if prev.Head != nil {
-				h, ok := prev.Head.(*List)
+				h, ok := prev.Head.(List)
 				if ok {
 					p(h)
 				} else {
@@ -242,7 +243,7 @@ func (list *List) Print() {
 				}
 			}
 			if prev.Tail != nil {
-				prev = prev.Tail.(*List)
+				prev = prev.Tail.(List)
 				fmt.Printf(" ")
 			} else {
 				break
@@ -255,7 +256,7 @@ func (list *List) Print() {
 }
 
 // Print a List
-func Print(list *List) {
+func Print(list List) {
 	list.Print()
 }
 
@@ -269,10 +270,10 @@ func rbetween(a int, b int) int {
 }
 
 // A few utility functions mainly used for testing.
-func VerifyFlattenedList(l *List) bool {
+func VerifyFlattenedList(l List) bool {
 	i := 1
-	var v func(l *List) bool
-	v = func(l *List) bool {
+	var v func(l List) bool
+	v = func(l List) bool {
 		if l.Head.(int) != i {
 			return true
 		}
@@ -280,13 +281,13 @@ func VerifyFlattenedList(l *List) bool {
 			return false
 		}
 		i++
-		return v(l.Tail.(*List))
+		return v(l.Tail.(List))
 	}
 	return v(l)
 }
 
 // Generate a list of ints starting at start and length long.
-func GenIntList(start, length int) *List {
+func GenIntList(start, length int) List {
 	idx := start + length - 1
 	l := Cons(idx, nil)
 	idx--
@@ -298,11 +299,11 @@ func GenIntList(start, length int) *List {
 }
 
 // Generate a nested list of ints starting at start and length long with up to depth nesting.
-func GenNestedList(astart, length, depth int) *List {
+func GenNestedList(astart, length, depth int) List {
 	var start = astart
-	var lst *List = nil
-	var gnl func(d int) *List
-	gnl = func(d int) *List {
+	var lst List = nil
+	var gnl func(d int) List
+	gnl = func(d int) List {
 		d--
 		if d > 0 {
 			l := Cons(nil, nil)

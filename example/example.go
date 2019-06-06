@@ -21,12 +21,12 @@ import . "leb.io/lispylist"
 // All code has been tested with lists up to length of 100,000.
 // For lists larger than 100,000 all the functions that are tail recursive would have to be verified as tail recursive.
 // If you are working with lists larger than 100,000 you should probably consider an alternative data structure anyway.
-func flatten(lst *List) *List {
+func flatten(lst List) List {
 	if lst == nil {
 		return nil
 	}
-	Head, Headok := lst.Head.(*List)
-	Tail, _ := lst.Tail.(*List)
+	Head, Headok := lst.Head.(List)
+	Tail, _ := lst.Tail.(List)
 	if Headok {
 		return Splice(flatten(Head), flatten(Tail))
 	}
