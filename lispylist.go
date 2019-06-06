@@ -28,8 +28,6 @@ package lispylist
 
 import (
 	"fmt"
-	"math/rand"
-	"time"
 )
 
 // List is the basic data structure used for all lists.
@@ -42,6 +40,8 @@ type Pair struct {
 	Tail interface{}
 }
 type List = *Pair
+
+var NilList List = nil
 
 // Cons creates a single element of a List
 // Cons(1, nil) creates a single element list
@@ -74,25 +74,6 @@ func Last(x List) List {
 
 // Nconc is like append but it shares structure with the lists that are passed to it.
 func Nconc(x, y List) List {
-	switch {
-	case x == nil && y == nil:
-		return nil
-	case x != nil && y == nil:
-		return x
-	case x == nil && y != nil:
-		return y
-	case x.Tail != nil:
-		l := Last(x)
-		l.Tail = y
-		return x
-	default:
-		x.Tail = y
-		return x
-	}
-}
-
-// Nconc is horrible old lispy name so I cloned it as "splice" for now.
-func Splice(x, y List) List {
 	switch {
 	case x == nil && y == nil:
 		return nil
@@ -214,10 +195,23 @@ var Pmax = 45 // The maximum number of list elements Print will print.
 
 // Print prints a list up to Pmax elements long
 // would be nice if pmax triggers to print the last few elements too
-func (list List) Print() {
+func Print(list interface{}) {
 	var cnt = 0
-	var p func(list List)
-	p = func(list List) {
+	var prt = func(x interface{}) {
+		_, ok := x.(string)
+		if ok {
+			fmt.Printf("%q", x)
+		} else {
+			fmt.Printf("%v", x)
+		}
+	}
+	var p func(list interface{})
+	p = func(alist interface{}) {
+		list, ok := alist.(List)
+		if !ok {
+			prt(alist)
+			return
+		}
 		fmt.Printf("(")
 		prev := list
 		for {
@@ -233,12 +227,7 @@ func (list List) Print() {
 				if ok {
 					p(h)
 				} else {
-					_, ok := prev.Head.(string)
-					if ok {
-						fmt.Printf("%q", prev.Head)
-					} else {
-						fmt.Printf("%v", prev.Head)
-					}
+					prt(prev.Head)
 					cnt++
 				}
 			}
@@ -251,85 +240,11 @@ func (list List) Print() {
 		}
 		fmt.Printf(")")
 	}
+	//fmt.Printf("%v\n", list)
 	p(list)
 	fmt.Printf("\n")
 }
 
-// Print a List
-func Print(list List) {
-	list.Print()
-}
-
-// Support for random numbers without locking
-var s = rand.NewSource(time.Now().UTC().UnixNano())
-var r = rand.New(s)
-
-// rbetween returns random int [a, b].
-func rbetween(a int, b int) int {
-	return r.Intn(b-a+1) + a
-}
-
-// A few utility functions mainly used for testing.
-func VerifyFlattenedList(l List) bool {
-	i := 1
-	var v func(l List) bool
-	v = func(l List) bool {
-		if l.Head.(int) != i {
-			return true
-		}
-		if l.Tail == nil {
-			return false
-		}
-		i++
-		return v(l.Tail.(List))
-	}
-	return v(l)
-}
-
-// Generate a list of ints starting at start and length long.
-func GenIntList(start, length int) List {
-	idx := start + length - 1
-	l := Cons(idx, nil)
-	idx--
-	for idx >= start {
-		l = Cons(idx, l)
-		idx--
-	}
-	return l
-}
-
-// Generate a nested list of ints starting at start and length long with up to depth nesting.
-func GenNestedList(astart, length, depth int) List {
-	var start = astart
-	var lst List = nil
-	var gnl func(d int) List
-	gnl = func(d int) List {
-		d--
-		if d > 0 {
-			l := Cons(nil, nil)
-			a := gnl(rbetween(1, d))
-			b := gnl(rbetween(1, d))
-			l.Head = a
-			l.Tail = MakeList(b)
-			return l
-		} else {
-			n := rbetween(1, length/rbetween(1, depth)+1)
-			l := GenIntList(start, n)
-			start += n
-			return l
-		}
-	}
-	for start < length+astart {
-		x := rbetween(1, 5)
-		if x < 3 {
-			n := rbetween(start, length+astart)
-			lst = Splice(lst, GenIntList(start, n))
-			start += n
-		} else {
-			d := rbetween(1, depth)
-			l := gnl(d)
-			lst = Splice(lst, l)
-		}
-	}
-	return lst
+func print(list List) {
+	fmt.Printf("%v\n", list)
 }

@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func benchmarkFlatten(b *testing.B, l []*List) {
+func benchmarkFlatten(b *testing.B, l []List) {
 	idx := 0
 	length := len(l)
 	for i := 0; i < b.N; i++ {
@@ -19,7 +19,7 @@ func benchmarkFlatten(b *testing.B, l []*List) {
 	}
 }
 
-func benchmarkFlattenAlt(b *testing.B, l []*List) {
+func benchmarkFlattenAlt(b *testing.B, l []List) {
 	idx := 0
 	length := len(l)
 	for i := 0; i < b.N; i++ {
@@ -40,7 +40,7 @@ func BenchmarkFlattenAlt(b *testing.B) {
 }
 
 var n = 10000
-var ll = make([]*List, n)
+var ll = make([]List, n)
 
 func init() {
 	for i := 0; i < n; i++ {
@@ -100,7 +100,7 @@ func Example001() {
 	Print(h)
 	l := h
 	l.Tail = Cons(2, nil)
-	l = l.Tail.(*List)
+	l = l.Tail.(List)
 	l.Tail = Cons(3, nil)
 	Print(h)
 	// Output:

@@ -3,7 +3,7 @@ package main
 
 import (
 	"flag"
-	_ "fmt"
+	"fmt"
 	. "leb.io/lispylist"
 )
 
@@ -30,5 +30,16 @@ func main() {
 	Print(list)
 	l := flatten(list)
 	Print(l)
+	Print(NilList)
+	l = nil
+	Print(l)
+	return
+	l2 := MakeList(1, 2, 3, 4)
+	//fmt.Printf("%#v\n", l)
+	fmt.Printf("car=")
+	Print(Car(l2))
+	//fmt.Printf("cdr=")
+	Print(Caddr(l))
+	//print(l)
 	//fmt.Printf("length=%d\n", LengthAlt(l))
 }
