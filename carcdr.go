@@ -11,13 +11,11 @@ func Car(x List) interface{} {
 	if x == nil || x.Head == nil {
 		return nil
 	}
-	return x.Head.(List)
-	/*
-		if ok {
-			return l
-		}
-		return x.Head
-	*/
+	l, ok := x.Head.(List)
+	if ok {
+		return l
+	}
+	return x.Head
 }
 
 // Cdr returns the tail of the list.
@@ -25,14 +23,35 @@ func Cdr(x List) interface{} {
 	if x == nil || x.Tail == nil {
 		return nil
 	}
-	return x.Tail.(List)
-	/*
-		l, ok := x.Tail.(List)
-		if ok {
-			return l
+	l, ok := x.Tail.(List)
+	if ok {
+		return l
+	}
+	return x.Tail
+}
+
+func CxR(s string, x List) interface{} {
+	var ok bool
+	var l List
+	for _, c := range s {
+		switch c {
+		case 'a':
+			//fmt.Printf("x=%#v\n", x)
+			l, ok = Car(x).(List)
+			//fmt.Printf("x=%#v, ok=%v\n", l, ok)
+			if !ok {
+				return Car(x)
+			}
+		case 'd':
+			l, ok = Cdr(x).(List)
+			if !ok {
+				return Cdr(x)
+			}
+		default:
+			panic("C: bad format")
 		}
-		return x.Tail
-	*/
+	}
+	return l
 }
 
 func Caar(x List) interface{} {

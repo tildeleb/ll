@@ -30,11 +30,7 @@ import (
 	"fmt"
 )
 
-// List is the basic data structure used for all lists.
-// I would have liked to call this Pair and make a type
-// type List *Pair
-// However, methods can not have pointer types a receivers.
-// Might revisit this decision
+// Pair is the basic data structure used for all lists.
 type Pair struct {
 	Head interface{}
 	Tail interface{}

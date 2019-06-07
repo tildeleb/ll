@@ -28,6 +28,19 @@ func main() {
 	flag.Parse()
 	list := GenNestedList(*start, *n, *depth)
 	Print(list)
+	for list != nil {
+		car := CxR("a", list)
+		cdr := CxR("d", list)
+		fmt.Printf("car=")
+		Print(car)
+		fmt.Printf("cdr=")
+		Print(cdr)
+		if cdr == nil {
+			break
+		}
+		list = cdr.(List)
+	}
+	return
 	l := flatten(list)
 	Print(l)
 	Print(NilList)
