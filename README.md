@@ -1,4 +1,4 @@
-# lisplists (lispy lists in Go)
+# ll (lispy lists in Go)
 
 Copyright © 2019 Lawrence E. Bakst. All rights reserved.
 
@@ -8,7 +8,7 @@ This one was just for fun.
 
 Unlike languages such as Python and Ruby, Go does not have a built in list type.
 
-Package lispylist implements a classical lisp list data structure based on a Cons cell or Pair. 
+Package ll implements a classical lisp list data structure based on a Cons cell or Pair. 
 
 The basic data structure here is a "List". sometimes called a "cons" or "pair" which has two cells, a Head and a Tail. In classic lisp the Head of a list is accessed via the "car" fucntion and the Tail is accessed via the "cdr" function. A Pair is often written as a dotted pair "(a . b)" where a is the Head and b is the Tail. Lists are build up from dotted Pairs via cons, with the last element of the list having nil as it's Tail.
 
