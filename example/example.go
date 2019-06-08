@@ -10,7 +10,7 @@
 
 package main
 
-import . "leb.io/lispylist"
+import . "leb.io/ll"
 
 // This function below was copied from FlattenAlt in my "lispylist" package.
 // The assignment doesn't specify how to flatten a list.

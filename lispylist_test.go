@@ -1,9 +1,9 @@
 // Copyright © 2019 Lawrence E. Bakst. All rights reserved.
-package lispylist_test
+package ll_test
 
 import (
 	_ "fmt"
-	. "leb.io/lispylist"
+	. "leb.io/ll"
 	"testing"
 )
 

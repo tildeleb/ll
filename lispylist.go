@@ -24,7 +24,7 @@
 // I actually coded Length with the check and it is substantially harder to read the code and the code is not
 // really more robust with the check.
 
-package lispylist
+package ll
 
 import (
 	_ "fmt"

@@ -4,7 +4,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	. "leb.io/lispylist"
+	. "leb.io/ll"
 )
 
 var start = flag.Int("start", 1, "start value for numbers")
