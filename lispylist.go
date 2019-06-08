@@ -27,7 +27,7 @@
 package lispylist
 
 import (
-	"fmt"
+	_ "fmt"
 )
 
 // Pair is the basic data structure used for all lists.
@@ -66,25 +66,6 @@ func Last(x List) List {
 		x = x.Tail.(List)
 	}
 	return x
-}
-
-// Nconc is like append but it shares structure with the lists that are passed to it.
-func Nconc(x, y List) List {
-	switch {
-	case x == nil && y == nil:
-		return nil
-	case x != nil && y == nil:
-		return x
-	case x == nil && y != nil:
-		return y
-	case x.Tail != nil:
-		l := Last(x)
-		l.Tail = y
-		return x
-	default:
-		x.Tail = y
-		return x
-	}
 }
 
 // Flatten takes a nested list and flattens it. This version uses an accumulator.
@@ -128,6 +109,8 @@ func LengthAlt(l List) int {
 	l, _ = l.Tail.(List)
 	return (1 + LengthAlt(l))
 }
+
+//(defun evenp (n) (if (zerop n) t (oddp (1- n)))) (defun oddp (n) (evenp (1- n)))
 
 // Length returns the number of top level Cons.
 func Length(l List) int {
@@ -187,60 +170,43 @@ func Traverse(lst List, f func(e interface{})) {
 	trav(lst, f)
 }
 
-var Pmax = 45 // The maximum number of list elements Print will print.
-
-// Print prints a list up to Pmax elements long
-// would be nice if pmax triggers to print the last few elements too
-func Print(list interface{}) {
-	var cnt = 0
-	var prt = func(x interface{}) {
-		_, ok := x.(string)
-		if ok {
-			fmt.Printf("%q", x)
-		} else {
-			fmt.Printf("%v", x)
-		}
+func Append2(x, y List) List {
+	if x == nil {
+		return y
 	}
-	var p func(list interface{})
-	p = func(alist interface{}) {
-		list, ok := alist.(List)
-		if !ok {
-			prt(alist)
-			return
-		}
-		fmt.Printf("(")
-		prev := list
-		for {
-			if cnt >= Pmax {
-				fmt.Printf("...")
-				break
-			}
-			if prev == nil {
-				break
-			}
-			if prev.Head != nil {
-				h, ok := prev.Head.(List)
-				if ok {
-					p(h)
-				} else {
-					prt(prev.Head)
-					cnt++
-				}
-			}
-			if prev.Tail != nil {
-				prev = prev.Tail.(List)
-				fmt.Printf(" ")
-			} else {
-				break
-			}
-		}
-		fmt.Printf(")")
-	}
-	//fmt.Printf("%v\n", list)
-	p(list)
-	fmt.Printf("\n")
+	cdr, _ := Cdr(x).(List)
+	return Cons(Car(x), Append2(cdr, y))
 }
 
-func print(list List) {
-	fmt.Printf("%v\n", list)
+func Append(rest ...interface{}) List {
+	if rest == nil || len(rest) == 0 {
+		return nil
+	}
+	if len(rest) == 1 {
+		return rest[0].(List)
+	}
+	length := len(rest)
+	length--
+	val := rest[length].(List)
+	rest = rest[:length]
+	length--
+	if length >= 0 {
+		for i, _ := range rest {
+			r, _ := rest[length-i].(List)
+			val = Append2(r, val)
+		}
+	}
+	return val
+}
+
+func Reverse(x List) List {
+	l := x
+	r := NilList
+	for {
+		r = Cons(Car(l), r)
+		l, _ = Cdr(l).(List)
+		if l == nil {
+			return r
+		}
+	}
 }

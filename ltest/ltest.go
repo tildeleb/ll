@@ -8,7 +8,7 @@ import (
 )
 
 var start = flag.Int("start", 1, "start value for numbers")
-var n = flag.Int("n", 20, "maximum value for numbers")
+var max = flag.Int("max", 20, "maximum value for numbers")
 var depth = flag.Int("depth", 7, "max depth for nesting")
 
 // Yet another way to flatten using Traverse
@@ -26,7 +26,21 @@ func flatten(list List) List {
 
 func main() {
 	flag.Parse()
-	list := GenNestedList(*start, *n, *depth)
+	n := NilList
+	x := MakeList(1, 2, 3, 4)
+	y := MakeList(5, 6, 7, 8)
+	z := MakeList(9, 10, 11, 12)
+	a := Append(x, y, z)
+	Print(a)
+	Print(Nreverse(a))
+	Print(Append(n, y, z))
+	Print(Append(n, n, z))
+	Print(Append(n, n, n))
+	Print(Append(n, y, n))
+	Print(Append(x, n, n))
+	Print(Append(x, n, z))
+	return
+	list := GenNestedList(*start, *max, *depth)
 	Print(list)
 	for list != nil {
 		car := CxR("a", list)
