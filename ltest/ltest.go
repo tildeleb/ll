@@ -16,7 +16,7 @@ var depth = flag.Int("depth", 7, "max depth for nesting")
 // Since the lists are generated with increasing integers it's easy to verify the correct results.
 
 func flatten(list List) List {
-	l := MakeList()
+	l := New()
 	var f = func(v interface{}) {
 		l = Splice(l, Cons(v, nil))
 	}
@@ -26,13 +26,25 @@ func flatten(list List) List {
 
 func main() {
 	flag.Parse()
+	list := GenNestedList(*start, *max, *depth)
+	Print(list)
+	//Print(Last(list))
+	v := Rbetween(*start, *max)
+	fmt.Printf("v=%d\n", v)
+	Print(Member(v, list))
+	return
+
 	n := NilList
-	x := MakeList(1, 2, 3, 4)
-	y := MakeList(5, 6, 7, 8)
-	z := MakeList(9, 10, 11, 12)
+	x := New(1, 2, 3, 4)
+	y := New(5, 6, 7, 8)
+	z := New(9, 10, 11, 12)
 	a := Append(x, y, z)
 	Print(a)
-	Print(Nreverse(a))
+	b := Substr(99, 12, a)
+	Print(b)
+	//Print(Nreverse(b))
+	Print(b)
+	Print(Member(6, b))
 	Print(Append(n, y, z))
 	Print(Append(n, n, z))
 	Print(Append(n, n, n))
@@ -40,8 +52,6 @@ func main() {
 	Print(Append(x, n, n))
 	Print(Append(x, n, z))
 	return
-	list := GenNestedList(*start, *max, *depth)
-	Print(list)
 	for list != nil {
 		car := CxR("a", list)
 		cdr := CxR("d", list)
@@ -61,7 +71,7 @@ func main() {
 	l = nil
 	Print(l)
 	return
-	l2 := MakeList(1, 2, 3, 4)
+	l2 := New(1, 2, 3, 4)
 	//fmt.Printf("%#v\n", l)
 	fmt.Printf("car=")
 	Print(Car(l2))

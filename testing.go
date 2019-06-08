@@ -17,6 +17,10 @@ func rbetween(a int, b int) int {
 	return r.Intn(b-a+1) + a
 }
 
+func Rbetween(a int, b int) int {
+	return r.Intn(b-a+1) + a
+}
+
 // A few utility functions mainly used for testing.
 func VerifyFlattenedList(l List) bool {
 	i := 1
@@ -58,7 +62,7 @@ func GenNestedList(astart, length, depth int) List {
 			a := gnl(rbetween(1, d))
 			b := gnl(rbetween(1, d))
 			l.Head = a
-			l.Tail = MakeList(b)
+			l.Tail = New(b)
 			return l
 		} else {
 			n := rbetween(1, length/rbetween(1, depth)+1)

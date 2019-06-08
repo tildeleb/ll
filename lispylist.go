@@ -1,6 +1,6 @@
 // Copyright © 2019 Lawrence E. Bakst. All rights reserved.
 
-// Package lispylist implements a classical lisp list data structure based on a Cons cell or Pair.
+// Package ll (lispylist) implements a classical lisp list data structure based on a Cons cell or Pair.
 // Unlike languages such as Python and Ruby, Go does not have a built in list type.
 // There is a List container but it's rarely used and just doubly linked list.
 //
@@ -12,17 +12,18 @@
 // In summary, list.Head contains a list element and the list.Tail contains a pointer to the next list element.
 // Most of the functions here are straight functions and not methods.
 // That's on purpose to support functional composition that reads well.
-// Currently the sole exception is Print for which a convenience function Print exists.
 //
-// I am a bit conflicted about using classic Lisp names like car and cdr vs head and tail, nconc vs splice.
+// This package uses the classic Lisp names like car, cdr, nconc, and so on.
+// My take on more modern names is in modern.go
 //
 // All code has been tested with lists up to length of 100,000.
-// For lists larger than 100,000 all the functions that are tail recursive would have to be verified.
+// Many of the functions here are tail recursive in the original style of Lisp.
+// For lists larger than 100,000 all the functions that are tail recursive optimization would have to be verified.
 //
 // NB. There is code below that does not check that a type assertion is "ok".
 // I am aware of this. However, even though it's not "ok" the nil is still assigned to the variable on the lhs.
 // I actually coded Length with the check and it is substantially harder to read the code and the code is not
-// really more robust with the check.
+// really more robust with the ok check.
 
 package ll
 
@@ -46,8 +47,17 @@ func Cons(a, b interface{}) List {
 	return &Pair{a, b}
 }
 
-// List creates a list of whatever is passed in as rest.
-func MakeList(rest ...interface{}) List {
+func Ncons(a interface{}) List {
+	return &Pair{a, nil}
+}
+
+func Xcons(a, b interface{}) List {
+	return &Pair{b, a}
+}
+
+// New creates a list of whatever is passed in as rest.
+// In Lisp this would be called List but that name is used for the type here.
+func New(rest ...interface{}) List {
 	if rest == nil || len(rest) == 0 {
 		return nil
 	}
@@ -209,4 +219,39 @@ func Reverse(x List) List {
 			return r
 		}
 	}
+}
+
+func substr(x, y, z interface{}) interface{} {
+	if z == nil {
+		return nil
+	}
+	lst, ok := z.(List)
+	if !ok {
+		if y == z {
+			return x
+		} else {
+			return z
+		}
+	}
+	// z is a list so we can take the car and cdr
+	// double tail recursive
+	return Cons(substr(x, y, Car(lst)), substr(x, y, Cdr(lst)))
+}
+
+// Substr substitutes x for all instances of y in list z.
+func Substr(x, y interface{}, z List) List {
+	l, _ := substr(x, y, z).(List)
+	return l
+}
+
+func Member(x interface{}, y List) List {
+	//fmt.Printf("x=%v, Car(y)=%v\n", x, Car(y))
+	if y == nil {
+		return nil
+	}
+	if x == Car(y) {
+		return y
+	}
+	cdr, _ := Cdr(y).(List)
+	return Member(x, cdr)
 }
